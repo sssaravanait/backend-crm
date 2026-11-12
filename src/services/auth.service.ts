@@ -2,6 +2,7 @@ import { RegisterDto, LoginDto, AuthResult } from "../types/auth.types";
 import { userRepository, type UserRepository } from "../repositories/user.repository";
 import { UserDocument } from "../models/user.model";
 import { toPublicUser } from '../mappers/user.mapper';
+import { passwordService } from '../services/password.service';
 import { ConflictError, NotFoundError, UnauthorizedError } from '../utils/app-error';
 
 /**
@@ -17,15 +18,26 @@ export class AuthService {
             throw new ConflictError("Email already in use");
         }
 
-        console.log("User data in request", dto);
+        const passwordHash = await passwordService.hash(dto.password);
 
         // Public registration can never create an admin. Admins are created only by the seed script.
         const user = await this.userRepository.create({
             name: dto.name,
             email: dto.email,
-            passwordHash: dto.password,
+            passwordHash,
             role: 'user',
         });
+
+        return this.buildAuthUser(user);
+    }
+
+    async login(dto: LoginDto): Promise<AuthResult> {
+        const user = await this.userRepository.findByEmailWithPassword(dto.email);
+        const isValid = await passwordService.compare(dto.password, user?.passwordHash as string);
+
+        if (!user || !isValid) {
+            throw new UnauthorizedError('Invalid email or password');
+        }
 
         return this.buildAuthUser(user);
     }

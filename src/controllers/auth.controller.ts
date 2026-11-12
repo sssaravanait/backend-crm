@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { authService } from '../services/auth.service';
 import { sendSuccess } from '../utils/api-response';
-import { RegisterDto } from '../types/auth.types';
+import { LoginDto, RegisterDto } from '../types/auth.types';
 import { clearAuthCookie, setAuthCookie } from '../utils/auth-cookie';
 
 /**
@@ -17,9 +17,9 @@ const register = async (req: Request, res: Response): Promise<void> => {
 };
 
 const login = async (req: Request, res: Response) => {
-    // Implementation for user login
-
-
+    const { user, token } = await authService.login(req.body as LoginDto);
+    setAuthCookie(res, token);
+    sendSuccess(res, { user });
 };
 
 const logout = async (req: Request, res: Response) => {
