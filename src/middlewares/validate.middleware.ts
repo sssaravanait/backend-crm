@@ -17,11 +17,10 @@ export const validateBody = <T>(schema: ObjectSchema<T>): RequestHandler => {
 
         if (error) {
             const details = error.details.map(({ path, message }) => ({
-                field: path.join('.'),
-                message: message.replace(/"/g, ''),
+                field: path.join('.') || 'body',
+                message: message.replace(/^"([^"]+)"(?=\s)/, '$1'),
             }));
-            next(new BadRequestError('Validation failed', details));
-            return;
+            return next(new BadRequestError('Validation failed', details));
         }
 
         req.body = value;
