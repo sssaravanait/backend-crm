@@ -5,8 +5,8 @@ import { connectDB } from "./config/db";
 async function startServer(): Promise<void> {
     await connectDB();
 
-    const server = app.listen(process.env.PORT || 3000, () => {
-        console.log(`Server is running on port ${process.env.PORT || 3000}`);
+    const server = app.listen(process.env.PORT || 4000, () => {
+        console.log(`Server is running on port ${process.env.PORT || 4000}`);
     });
 
     // Graceful shutdown: Docker sends SIGTERM on `docker stop`

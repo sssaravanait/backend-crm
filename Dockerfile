@@ -35,4 +35,4 @@ COPY --chown=app:app package.json ./
 
 USER app
 EXPOSE 4000
-CMD ["node", "dist/server.js"]
+CMD ["node", "src/server.js"]

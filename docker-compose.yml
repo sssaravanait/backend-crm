@@ -1,0 +1,63 @@
+name: backend-crm
+
+# Shared log rotation settings, reused by every service (DRY)
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  mongo:
+    image: mongo:8
+    container_name: crm-mongo
+    restart: unless-stopped
+    # Bound to localhost so only this machine can reach the database.
+    # Remove the ports block entirely if you only need Mongo inside Docker.
+    ports:
+      - "127.0.0.1:27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging: *default-logging
+    networks:
+      - crm-net
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: crm-api
+    restart: unless-stopped
+    # Loads JWT_SECRET, CLIENT_ORIGIN, etc. from .env (the file must exist)
+    env_file: .env
+    environment:
+      # Overrides the localhost URI in .env so the container reaches Mongo by service name
+      MONGO_URI: mongodb://mongo:27017/mini_crm
+    ports:
+      - "4000:4000"
+    depends_on:
+      mongo:
+        condition: service_healthy   # Wait until Mongo accepts commands, not just until it starts
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging: *default-logging
+    networks:
+      - crm-net
+
+volumes:
+  mongo-data:
+
+networks:
+  crm-net:
+    external: true   # Created once with: docker network create crm-net
