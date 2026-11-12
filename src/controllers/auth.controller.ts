@@ -1,4 +1,8 @@
 import { Request, Response } from 'express';
+import { authService } from '../services/auth.service';
+import { sendSuccess } from '../utils/api-response';
+import { RegisterDto } from '../types/auth.types';
+import { clearAuthCookie, setAuthCookie } from '../utils/auth-cookie';
 
 /**
  * Controllers are thin. They read validated input, call a service,
@@ -7,10 +11,9 @@ import { Request, Response } from 'express';
  */
 
 const register = async (req: Request, res: Response): Promise<void> => {
-    // Implementation for user registration
-    // const result = await authService.register(req.body);
-
-
+    const { user, token } = await authService.register(req.body as RegisterDto);
+    setAuthCookie(res, token);
+    sendSuccess(res, { user }, 201);
 };
 
 const login = async (req: Request, res: Response) => {

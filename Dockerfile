@@ -5,6 +5,16 @@ FROM node:24-alpine AS base
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 WORKDIR /app
 
+# ---- Development: all deps, source is mounted at runtime, hot reload via tsx watch
+FROM base AS dev
+ENV NODE_ENV=development
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY tsconfig.json ./
+COPY src ./src
+EXPOSE 4000
+CMD ["npm", "run", "dev"]
+
 # ---- Install all deps (dev included) for compilation
 FROM base AS deps
 COPY package.json package-lock.json ./

@@ -7,6 +7,13 @@ export interface CreateUser {
     role: Role;
 }
 
+/** JWT claims. `sub` is the standard JWT field for the subject (user id). */
+export interface TokenPayload {
+    sub: string;
+    role: Role;
+}
+
+/** Minimal identity attached to req.user. Built from the verified token and DB record. */
 export interface AuthUser {
     id: string;
     role: Role;

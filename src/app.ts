@@ -5,6 +5,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 
 import { apiRouter } from "./routes/index";
+import { requestLogger } from "./middlewares/request-logger.middleware";
 
 dotenv.config();
 
@@ -13,6 +14,9 @@ export const app = express();
 // The Next.js proxy is the only hop in front of Express. Trusting one hop makes
 // req.ip the real client IP, so rate limiting works per user, not per frontend container.
 app.set('trust proxy', 1);
+
+// First in the chain, so every request is logged, including ones rejected later.
+app.use(requestLogger);
 
 app.disable('x-powered-by');
 app.use(helmet());
