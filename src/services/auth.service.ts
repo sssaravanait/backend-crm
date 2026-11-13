@@ -1,8 +1,9 @@
-import { RegisterDto, LoginDto, AuthResult } from "../types/auth.types";
+import { RegisterDto, LoginDto, AuthResult, PublicUser } from "../types/auth.types";
 import { userRepository, type UserRepository } from "../repositories/user.repository";
 import { UserDocument } from "../models/user.model";
 import { toPublicUser } from '../mappers/user.mapper';
 import { passwordService } from '../services/password.service';
+import { tokenService } from '../services/token.service';
 import { ConflictError, NotFoundError, UnauthorizedError } from '../utils/app-error';
 
 /**
@@ -42,10 +43,20 @@ export class AuthService {
         return this.buildAuthUser(user);
     }
 
+    async getProfile(userId: string): Promise<PublicUser> {
+        const user = await this.userRepository.findById(userId);
+
+        if (!user) {
+            throw new NotFoundError('User not found');
+        }
+
+        return toPublicUser(user);
+    }
+
     /** Shared by register and login so the token and response shape are built one way (DRY). */
     private buildAuthUser(user: UserDocument): AuthResult {
         const publicUser = toPublicUser(user);
-        const token = '';
+        const token = tokenService.sign({ id: publicUser.id, role: publicUser.role });
         return { user: publicUser, token };
     }
 }

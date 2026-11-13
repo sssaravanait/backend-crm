@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { authService } from '../services/auth.service';
 import { sendSuccess } from '../utils/api-response';
-import { LoginDto, RegisterDto } from '../types/auth.types';
+import { LoginDto, RegisterDto, AuthUser } from '../types/auth.types';
 import { clearAuthCookie, setAuthCookie } from '../utils/auth-cookie';
 
 /**
@@ -23,15 +23,16 @@ const login = async (req: Request, res: Response) => {
 };
 
 const logout = async (req: Request, res: Response) => {
-    // Implementation for user logout
-
-
+    // JWTs are stateless, so logout only clears the cookie. See "Known limits" below.
+    clearAuthCookie(res);
+    res.status(204).end();
 };
 
 const me = async (req: Request, res: Response) => {
     // Implementation for user profile
-
-
+    const { id } = req.user as AuthUser;
+    const user = await authService.getProfile(id);
+    sendSuccess(res, { user });
 };
 
 export const authController = { register, login, logout, me };
