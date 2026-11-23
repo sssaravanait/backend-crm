@@ -13,13 +13,13 @@ import { clearAuthCookie, setAuthCookie } from '../utils/auth-cookie';
 const register = async (req: Request, res: Response): Promise<void> => {
     const { user, token } = await authService.register(req.body as RegisterDto);
     setAuthCookie(res, token);
-    sendSuccess(res, { user }, 201);
+    sendSuccess(res, { user, token }, 201);
 };
 
 const login = async (req: Request, res: Response) => {
     const { user, token } = await authService.login(req.body as LoginDto);
     setAuthCookie(res, token);
-    sendSuccess(res, { user });
+    sendSuccess(res, { user, token });
 };
 
 const logout = async (req: Request, res: Response) => {
