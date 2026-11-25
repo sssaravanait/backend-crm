@@ -5,7 +5,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 
 import { apiRouter } from "./routes/index";
-import { errorHandler } from "./middlewares/error.middleware";
+import { notFoundHandler, errorHandler } from "./middlewares/error.middleware";
 import { requestLogger } from "./middlewares/request-logger.middleware";
 
 dotenv.config();
@@ -27,4 +27,5 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use('/api', apiRouter);
-app.use(errorHandler);
+app.use(notFoundHandler);
+app.use(errorHandler); // must be last
