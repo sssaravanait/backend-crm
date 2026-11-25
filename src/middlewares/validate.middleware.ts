@@ -1,29 +1,29 @@
-import type { RequestHandler } from 'express';
-import type { ObjectSchema } from 'joi';
-import { BadRequestError } from '../utils/app-error';
+import type { NextFunction, Request, Response } from "express";
+import type { ZodTypeAny } from "zod";
+import { AppError } from "../errors/AppError";
+
+export type RequestSource = "body" | "params" | "query";
 
 /**
- * Validates req.body against a Joi schema.
- * - abortEarly: false → report every invalid field at once
- * - stripUnknown: true → silently removes unexpected keys (for example, a client-sent "role": "admin")
- * The sanitized value replaces req.body, so controllers only see allowed fields.
+ * Validates one part of the request and stores the parsed (typed, stripped) result
+ * in res.locals. Storing it in res.locals instead of reassigning req.query works
+ * in Express 5, where req.query is a read-only getter.
  */
-export const validateBody = <T>(schema: ObjectSchema<T>): RequestHandler => {
-    return (req, _res, next) => {
-        const { error, value } = schema.validate(req.body ?? {}, {
-            abortEarly: false,
-            stripUnknown: true,
-        });
+export const validate =
+    (schema: ZodTypeAny, source: RequestSource = "body") =>
+        (req: Request, res: Response, next: NextFunction): void => {
+            const result = schema.safeParse(req[source]);
 
-        if (error) {
-            const details = error.details.map(({ path, message }) => ({
-                field: path.join('.') || 'body',
-                message: message.replace(/^"([^"]+)"(?=\s)/, '$1'),
-            }));
-            return next(new BadRequestError('Validation failed', details));
-        }
+            if (!result.success) {
+                const { fieldErrors, formErrors } = result.error.flatten();
+                const errors = formErrors.length ? { ...fieldErrors, _form: formErrors } : fieldErrors;
+                next(new AppError(422, "Validation failed", errors));
+                return;
+            }
 
-        req.body = value;
-        next();
-    };
-};
+            res.locals.validated = { ...res.locals.validated, [source]: result.data };
+            next();
+        };
+
+export const getValidated = <T>(res: Response, source: RequestSource): T =>
+    res.locals.validated[source] as T;
