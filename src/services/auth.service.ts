@@ -4,19 +4,21 @@ import { UserDocument } from "../models/user.model";
 import { toPublicUser } from '../mappers/user.mapper';
 import { passwordService } from '../services/password.service';
 import { tokenService } from '../services/token.service';
-import { ConflictError, NotFoundError, UnauthorizedError } from '../utils/app-error';
+import { AppError } from '../errors/AppError';
 
 /**
  * Hash used when the email is unknown. Running one bcrypt comparison either way
  * means response time doesn't reveal which emails are registered (user enumeration).
  */
+
+const notFound = () => AppError.notFound("User not found");
 export class AuthService {
     // Constructor injection (Dependency Inversion): the repository is swappable in tests.
     constructor(private readonly userRepository: UserRepository) {}
 
     async register(dto: RegisterDto): Promise<AuthResult> {
         if (await this.userRepository.existsByEmail(dto.email)) {
-            throw new ConflictError("Email already in use");
+            throw AppError.conflict('Email already in use');
         }
 
         const passwordHash = await passwordService.hash(dto.password);
@@ -34,10 +36,13 @@ export class AuthService {
 
     async login(dto: LoginDto): Promise<AuthResult> {
         const user = await this.userRepository.findByEmailWithPassword(dto.email);
+
+        if (!user) throw notFound();
+
         const isValid = await passwordService.compare(dto.password, user?.passwordHash as string);
 
-        if (!user || !isValid) {
-            throw new UnauthorizedError('Invalid email or password');
+        if (!isValid) {
+            throw AppError.unauthorized('Invalid email or password')
         }
 
         return this.buildAuthUser(user);
@@ -46,9 +51,7 @@ export class AuthService {
     async getProfile(userId: string): Promise<PublicUser> {
         const user = await this.userRepository.findById(userId);
 
-        if (!user) {
-            throw new NotFoundError('User not found');
-        }
+        if (!user) throw notFound();
 
         return toPublicUser(user);
     }

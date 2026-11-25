@@ -12,8 +12,9 @@ export const validate =
             if (!result.success) {
                 // Works with Zod 3 and Zod 4: map each issue to its field path
                 const details = result.error.issues.reduce<ErrorDetails>((acc, issue) => {
-                    const key = issue.path.join(".") || "_form";
-                    (acc[key] ??= []).push(issue.message);
+                    const key = issue.path.join(".");
+                    if (key)
+                        (acc[key] ??= []).push(issue.message);
                     return acc;
                 }, {});
 

@@ -81,6 +81,7 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     res.status(appError.statusCode).json({
         message: appError.message,
         code: appError.code,
+        statusCode: appError.statusCode,
         ...(appError.details && { errors: appError.details }),
     });
 };
