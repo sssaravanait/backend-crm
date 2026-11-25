@@ -33,8 +33,8 @@ services:
       # Overrides the localhost URI in .env so the container reaches Mongo by service name
       MONGO_URI: mongodb://mongo:27017/mini_crm
     volumes:
-      - ./src:/app/src              # Bind mount: host edits reach the container
-      - /app/node_modules           # Anonymous volume: keeps Linux node_modules, not your Windows ones
+      - ./:/app                # bind mount: host source -> container
+      - /app/node_modules      # anonymous volume: keeps container's node_modules
     ports:
       - "4000:4000"
     depends_on:

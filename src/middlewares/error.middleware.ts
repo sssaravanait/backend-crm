@@ -27,7 +27,7 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, next) => {
         success: false,
         error: {
             code: 'INTERNAL_SERVER_ERROR',
-            message: 'An unexpected error occurred.',
+            message: err.message,
         },
     });
 };
