@@ -56,7 +56,7 @@ export const customerResponseSchema = z.object({
 });
 
 export const paginatedCustomersResponseSchema = z.object({
-    data: z.array(customerResponseSchema),
+    customers: z.array(customerResponseSchema),
     meta: z.object({
         page: z.number().int(),
         limit: z.number().int(),

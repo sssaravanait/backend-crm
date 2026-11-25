@@ -4,8 +4,6 @@ import { getUserId } from "../utils/requestUser";
 import { sendSuccess } from "../utils/api-response";
 import type { CustomerService } from "../services/customer.service";
 import {
-    customerResponseSchema,
-    paginatedCustomersResponseSchema,
     type CreateCustomerInput,
     type CustomerIdParams,
     type ListCustomersQuery,
@@ -21,26 +19,26 @@ export class CustomerController {
     getAll = async (req: Request, res: Response): Promise<void> => {
         const query = getValidated<ListCustomersQuery>(res, "query");
         const result = await this.service.list(getUserId(req), query);
-        sendSuccess(res, { paginatedCustomersResponseSchema, result }, 200);
+        sendSuccess(res, result, 200);
     };
 
     getOne = async (req: Request, res: Response): Promise<void> => {
         const { id } = getValidated<CustomerIdParams>(res, "params");
         const customer = await this.service.getById(getUserId(req), id);
-        sendSuccess(res, { customerResponseSchema, customer }, 200);
+        sendSuccess(res, { customer }, 200);
     };
 
     create = async (req: Request, res: Response): Promise<void> => {
         const input = getValidated<CreateCustomerInput>(res, "body");
         const customer = await this.service.create(getUserId(req), input);
-        sendSuccess(res, { customerResponseSchema, customer }, 201);
+        sendSuccess(res, { customer }, 201);
     };
 
     update = async (req: Request, res: Response): Promise<void> => {
         const { id } = getValidated<CustomerIdParams>(res, "params");
         const input = getValidated<UpdateCustomerInput>(res, "body");
         const customer = await this.service.update(getUserId(req), id, input);
-        sendSuccess(res, { customerResponseSchema, customer }, 200);
+        sendSuccess(res, { customer }, 200);
     };
 
     delete = async (req: Request, res: Response): Promise<void> => {

@@ -1,7 +1,7 @@
 import jwt, { type JwtPayload, type SignOptions } from 'jsonwebtoken';
 import { isRole } from '../constants/auth.constant';
 import type { AuthUser, TokenPayload } from '../types/auth.types.js';
-import { UnauthorizedError } from '../utils/app-error';
+import { AppError } from '../errors/AppError';
 
 const ALGORITHM = 'HS256' as const;
 
@@ -20,11 +20,11 @@ export const tokenService = {
             decoded = jwt.verify(token, process.env.JWT_SECRET as string, { algorithms: [ALGORITHM] });
         } catch {
             // Hide the reason (expired, malformed, bad signature) from the client.
-            throw new UnauthorizedError('Invalid or expired session');
+            throw AppError.unauthorized('Invalid or expired session');
         }
 
         if (typeof decoded === 'string' || typeof decoded.sub !== 'string' || !isRole(decoded.role)) {
-            throw new UnauthorizedError('Invalid session token');
+            throw AppError.unauthorized('Invalid session token');
         }
         return { sub: decoded.sub, role: decoded.role };
     },

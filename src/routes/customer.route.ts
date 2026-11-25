@@ -23,7 +23,7 @@ export const customerRouter = (
     // Every customer route requires a valid JWT
     router.use(authenticate);
 
-    router.get('/', validate(listCustomersQuerySchema), controller.getAll);
+    router.get('/', validate(listCustomersQuerySchema, "query"), controller.getAll);
     router.post('/', validate(createCustomerSchema), controller.create);
     router.get('/:id', validateId, controller.getOne);
     router.patch('/:id', validateId, validate(updateCustomerSchema), controller.update);

@@ -2,7 +2,7 @@ import type { Request, RequestHandler } from 'express';
 import { AUTH_COOKIE_NAME, type Role } from '../constants/auth.constant';
 import { userRepository } from '../repositories/user.repository';
 import { tokenService } from '../services/token.service';
-import { ForbiddenError, UnauthorizedError } from '../utils/app-error';
+import { AppError } from '../errors/AppError';
 
 const extractToken = (req: Request): string | undefined =>
     req.cookies?.[AUTH_COOKIE_NAME] as string | undefined;
@@ -16,13 +16,13 @@ const extractToken = (req: Request): string | undefined =>
 export const authenticate: RequestHandler = async (req, _res, next) => {
     const token = extractToken(req);
     if (!token) {
-        return next(new UnauthorizedError('Authentication required'));
+        return next(AppError.unauthorized('Authentication required'));
     }
 
-    const { sub } = tokenService.verify(token); // Throws UnauthorizedError on failure
+    const { sub } = tokenService.verify(token); // Throws an AppError if the token is invalid.
     const user = await userRepository.findById(sub);
     if (!user) {
-        return next(new UnauthorizedError('Account no longer exists'));
+        return next(AppError.unauthorized('Account no longer exists'));
     }
 
     req.user = { id: user._id.toString(), role: user.role };
@@ -34,10 +34,10 @@ export const authorize =
     (...allowedRoles: Role[]): RequestHandler =>
         (req, _res, next) => {
             if (!req.user) {
-                return next(new UnauthorizedError());
+                return next(AppError.unauthorized());
             }
             if (!allowedRoles.includes(req.user.role)) {
-                return next(new ForbiddenError());
+                return next(AppError.forbidden());
             }
             next();
         };

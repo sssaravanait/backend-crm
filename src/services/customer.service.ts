@@ -19,7 +19,7 @@ export class CustomerService {
         const { items, total } = await this.repository.findMany({ ownerId, ...query });
 
         return {
-            data: items.map(toCustomerResponse),
+            customers: items.map(toCustomerResponse),
             meta: {
                 page: query.page,
                 limit: query.limit,

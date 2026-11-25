@@ -11,4 +11,4 @@ apiRouter.get('/health', (_req, res) => {
 });
 
 apiRouter.use('/auth', authRouter);
-apiRouter.use('/customers', customerRouter);
+apiRouter.use('/customers', customerRouter());
