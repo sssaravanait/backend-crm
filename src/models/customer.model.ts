@@ -11,13 +11,20 @@ export interface CustomerAttributes {
     notes?: string;
 }
 
-export type CustomerRecord = CustomerAttributes & {
-    _id: Types.ObjectId;
+// Fields Mongoose adds because of `timestamps: true`
+export interface CustomerTimestamps {
     createdAt: Date;
     updatedAt: Date;
 }
 
-const customerSchema = new Schema<CustomerAttributes>(
+export type CustomerRecord = CustomerAttributes & CustomerTimestamps & {
+    _id: Types.ObjectId;
+}
+
+// The schema generic describes the full stored shape, timestamps included
+type CustomerDocument = CustomerAttributes & CustomerTimestamps;
+
+const customerSchema = new Schema<CustomerDocument>(
     {
         owner: { type: Schema.Types.ObjectId, ref: "user", required: true },
         name: { type: String, required: true, trim: true, maxlength: 100 },
@@ -38,4 +45,4 @@ customerSchema.index({ owner: 1, email: 1 }, { unique: true });
 // Supports the common "my customers by status, newest first" list query
 customerSchema.index({ owner: 1, status: 1, createdAt: -1 });
 
-export const CustomerModel = model<CustomerAttributes>("Customer", customerSchema);
+export const CustomerModel = model<CustomerDocument>("Customer", customerSchema);

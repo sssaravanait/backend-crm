@@ -84,7 +84,7 @@ export class MongoCustomerRepository implements CustomerRepository {
 
     async create({ ownerId, ...data }: NewCustomer): Promise<CustomerRecord> {
         const doc = await CustomerModel.create({ ...data, owner: oid(ownerId) });
-        return doc.toObject() as CustomerRecord;
+        return doc.toObject();
     }
 
     async updateForOwner(id: string, ownerId: string, data: UpdateCustomerInput): Promise<CustomerRecord | null> {
