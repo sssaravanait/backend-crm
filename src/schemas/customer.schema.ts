@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CUSTOMER_STATUSES } from "../constants/customer.constant";
+import { apiDateSchema } from "../shared/formatters/date.formatter";
 
 const MONGO_ID_REGEX = /^[a-fA-F0-9]{24}$/;
 
@@ -51,8 +52,8 @@ export const customerResponseSchema = z.object({
     company: z.string().optional(),
     status: z.enum(CUSTOMER_STATUSES),
     notes: z.string().optional(),
-    createdAt: z.string().datetime(),
-    updatedAt: z.string().datetime(),
+    createdAt: apiDateSchema,
+    updatedAt: apiDateSchema,
 });
 
 export const paginatedCustomersResponseSchema = z.object({

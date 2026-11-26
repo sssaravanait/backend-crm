@@ -1,5 +1,6 @@
 import type { CustomerRecord } from "../models/customer.model";
 import type { CustomerResponse } from "../schemas/customer.schema";
+import { formatApiDate } from '../shared/formatters/date.formatter';
 
 // Explicit mapping: the database shape never leaks directly to the client
 export const toCustomerResponse = (record: CustomerRecord): CustomerResponse => ({
@@ -10,6 +11,6 @@ export const toCustomerResponse = (record: CustomerRecord): CustomerResponse => 
     company: record.company,
     status: record.status,
     notes: record.notes,
-    createdAt: record.createdAt.toISOString(),
-    updatedAt: record.updatedAt.toISOString(),
+    createdAt: formatApiDate(record.createdAt),
+    updatedAt: formatApiDate(record.updatedAt),
 });
